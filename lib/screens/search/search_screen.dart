@@ -1,11 +1,11 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:fwp/models/models.dart';
 import 'package:fwp/repositories/repositories.dart';
 import 'package:fwp/styles/styles.dart';
 import 'package:fwp/widgets/widgets.dart';
 import 'package:macos_ui/macos_ui.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({Key? key}) : super(key: key);
@@ -16,12 +16,12 @@ class SearchScreen extends StatefulWidget {
 
 class _SearchScreenState extends State<SearchScreen> {
   final FocusNode focusNode = FocusNode();
-  final HttpRepository httpRepository = HttpRepository();
+  final FirestoreRepository firestoreRepository = FirestoreRepository();
   List<Episode> episodes = [];
   String query = "";
   bool hasError = false;
   bool hasUserStartedSearching = false;
-  bool isLoading = true;
+  bool isLoading = false;
   bool isSearchViewClicked = false;
 
   Future<void> search(String searchText) async {
@@ -32,9 +32,35 @@ class _SearchScreenState extends State<SearchScreen> {
     try {
       setState(() {
         isLoading = true;
+        hasError = false;
       });
-      final ids = await httpRepository.search(searchText);
-      final searchEpisodes = await httpRepository.getEpisodesByIds(ids);
+
+      // Convert search text to lowercase for case-insensitive search
+      final searchLower = searchText.toLowerCase();
+
+      // Get all documents from Firestore
+      final QuerySnapshot snapshot = await FirebaseFirestore.instance
+          .collection('vimeo_videos')
+          .orderBy('created_time', descending: true)
+          .get(); // Removed the limit to get all documents
+
+      // Filter and map documents that contain the search text
+      final searchEpisodes = snapshot.docs.where((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        final name = (data['name'] as String).toLowerCase();
+        return name.contains(searchLower);
+      }).map((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        return Episode(
+          id: int.parse(doc.id),
+          title: data['name'] ?? '',
+          date: data['created_time']?.toDate().toString() ?? '',
+          imageUrl: data['thumbnail_url'] ?? '',
+          vimeoUrl: data['player_embed_url'] ?? '',
+          description: data['description'] ?? '',
+          duration: _formatDuration(data['duration']),
+        );
+      }).toList();
 
       setState(() {
         isLoading = false;
@@ -42,8 +68,19 @@ class _SearchScreenState extends State<SearchScreen> {
         episodes = searchEpisodes;
       });
     } catch (error) {
-      hasError = true;
+      print('Search error: $error');
+      setState(() {
+        isLoading = false;
+        hasError = true;
+      });
     }
+  }
+
+  String _formatDuration(dynamic duration) {
+    if (duration == null) return '';
+    final minutes = (duration / 60).floor();
+    final seconds = (duration % 60).floor();
+    return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
   }
 
   @override
@@ -114,32 +151,6 @@ class _SearchScreenState extends State<SearchScreen> {
       return Text(
         'Résultats pour "$query"',
         style: Theme.of(context).textTheme.headline6,
-      );
-    }
-
-    if (Platform.isMacOS) {
-      return MacosTextField(
-        prefix: const Icon(
-          Icons.search,
-          size: 20,
-        ),
-        placeholder: "Chercher ici",
-        placeholderStyle: TextStyle(color: Colors.grey[500]),
-        decoration: BoxDecoration(
-          color: isDarkMode ? Colors.black : Colors.grey[200],
-          borderRadius: const BorderRadius.all(Radius.circular(6)),
-        ),
-        style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
-        autofocus: true,
-        textInputAction: TextInputAction.search,
-        focusNode: focusNode,
-        onSubmitted: (value) {
-          isSearchViewClicked = false;
-          setState(() {
-            query = value;
-          });
-          search(value);
-        },
       );
     }
 

@@ -24,7 +24,7 @@ class FwpApp extends StatefulWidget {
 }
 
 class _FwpAppState extends State<FwpApp> with WidgetsBindingObserver {
-  List<String> screensTitle = ["Accueil", "Lecteur", "Livres", "A propos"];
+  List<String> screensTitle = ["Accueil", "Recherche", "A propos"];
   List<Widget> screens = [];
   List<BottomNavigationBarItem> bottomNavigationBarItems = [];
   List<SidebarItem> sidebarItems = [];
@@ -45,14 +45,9 @@ class _FwpAppState extends State<FwpApp> with WidgetsBindingObserver {
       darkThemeData = darkThemeDataThinkerview;
       lightThemeDataMacOS = lightThemeDataMacOSThinkerview;
       darkThemeDataMacOS = darkThemeDataMacOSThinkerview;
-      screensTitle = ["Accueil", "Lecteur", "Recherche", "Livres", "A propos"];
+      screensTitle = ["Accueil", "Recherche", "A propos"];
 
-      screens = const [
-        HomeScreen(),
-        SearchScreen(),
-        BooksScreen(),
-        AboutScreen()
-      ];
+      screens = const [HomeScreen(), SearchScreen(), AboutScreen()];
 
       bottomNavigationBarItems = [
         BottomNavigationBarItem(
@@ -60,21 +55,13 @@ class _FwpAppState extends State<FwpApp> with WidgetsBindingObserver {
           label: screensTitle[0],
         ),
         BottomNavigationBarItem(
-          icon: const Icon(Icons.music_note),
+          icon: const Icon(Icons.search),
           label: screensTitle[1],
         ),
         BottomNavigationBarItem(
-          icon: const Icon(Icons.search),
+          icon: const Icon(Icons.info),
           label: screensTitle[2],
         ),
-        BottomNavigationBarItem(
-          icon: const Icon(Icons.book),
-          label: screensTitle[3],
-        ),
-        BottomNavigationBarItem(
-          icon: const Icon(Icons.info),
-          label: screensTitle[4],
-        )
       ];
     } else if (app == APP.causecommune.name) {
       lightThemeData = ligthThemeDataCauseCommune;
@@ -101,10 +88,6 @@ class _FwpAppState extends State<FwpApp> with WidgetsBindingObserver {
         BottomNavigationBarItem(
           icon: const Icon(Icons.search),
           label: screensTitle[2],
-        ),
-        BottomNavigationBarItem(
-          icon: const Icon(Icons.info),
-          label: screensTitle[3],
         )
       ];
     }
@@ -128,7 +111,7 @@ class _FwpAppState extends State<FwpApp> with WidgetsBindingObserver {
         ),
         SidebarItem(
           leading: MacosIcon(
-            CupertinoIcons.music_note,
+            CupertinoIcons.search,
             color: isDarkMode ? Colors.white : Colors.black,
           ),
           label: Text(
@@ -141,37 +124,11 @@ class _FwpAppState extends State<FwpApp> with WidgetsBindingObserver {
         ),
         SidebarItem(
           leading: MacosIcon(
-            CupertinoIcons.search,
-            color: isDarkMode ? Colors.white : Colors.black,
-          ),
-          label: Text(
-            screensTitle[2],
-            style: Theme.of(context)
-                .textTheme
-                .bodyText1!
-                .copyWith(color: isDarkMode ? Colors.white : Colors.black),
-          ),
-        ),
-        SidebarItem(
-          leading: MacosIcon(
-            CupertinoIcons.book,
-            color: isDarkMode ? Colors.white : Colors.black,
-          ),
-          label: Text(
-            screensTitle[3],
-            style: Theme.of(context)
-                .textTheme
-                .bodyText1!
-                .copyWith(color: isDarkMode ? Colors.white : Colors.black),
-          ),
-        ),
-        SidebarItem(
-          leading: MacosIcon(
             CupertinoIcons.info,
             color: isDarkMode ? Colors.white : Colors.black,
           ),
           label: Text(
-            screensTitle[4],
+            screensTitle[2],
             style: Theme.of(context)
                 .textTheme
                 .bodyText1!
@@ -196,7 +153,7 @@ class _FwpAppState extends State<FwpApp> with WidgetsBindingObserver {
       ),
       SidebarItem(
         leading: MacosIcon(
-          CupertinoIcons.music_note,
+          CupertinoIcons.search,
           color: isDarkMode ? Colors.white : Colors.black,
         ),
         label: Text(
@@ -209,24 +166,11 @@ class _FwpAppState extends State<FwpApp> with WidgetsBindingObserver {
       ),
       SidebarItem(
         leading: MacosIcon(
-          CupertinoIcons.search,
-          color: isDarkMode ? Colors.white : Colors.black,
-        ),
-        label: Text(
-          screensTitle[2],
-          style: Theme.of(context)
-              .textTheme
-              .bodyText1!
-              .copyWith(color: isDarkMode ? Colors.white : Colors.black),
-        ),
-      ),
-      SidebarItem(
-        leading: MacosIcon(
           CupertinoIcons.info,
           color: isDarkMode ? Colors.white : Colors.black,
         ),
         label: Text(
-          screensTitle[3],
+          screensTitle[2],
           style: Theme.of(context)
               .textTheme
               .bodyText1!
