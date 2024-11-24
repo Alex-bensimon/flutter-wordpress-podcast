@@ -15,7 +15,6 @@ class _AuthScreenState extends State<AuthScreen> {
   final _formKey = GlobalKey<FormState>();
   String email = '';
   String password = '';
-  bool isLogin = true;
   bool isLoading = false;
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -31,21 +30,11 @@ class _AuthScreenState extends State<AuthScreen> {
       _formKey.currentState?.save();
 
       try {
-        if (isLogin) {
-          // Log user in
-          await _auth.signInWithEmailAndPassword(
-            email: email.trim(),
-            password: password.trim(),
-          );
-        } else {
-          // Register user
-          await _auth.createUserWithEmailAndPassword(
-            email: email.trim(),
-            password: password.trim(),
-          );
-        }
+        await _auth.signInWithEmailAndPassword(
+          email: email.trim(),
+          password: password.trim(),
+        );
 
-        // Save user login information to database
         await getIt<DatabaseHandler>().saveUserLogin(email.trim());
       } on FirebaseAuthException catch (e) {
         String message = 'An error occurred, please check your credentials.';
@@ -82,7 +71,7 @@ class _AuthScreenState extends State<AuthScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        isLogin ? 'Login' : 'Sign Up',
+                        'Connexion',
                         style: Theme.of(context).textTheme.headline4,
                       ),
                       const SizedBox(height: 20),
@@ -92,7 +81,7 @@ class _AuthScreenState extends State<AuthScreen> {
                           if (value == null ||
                               value.isEmpty ||
                               !value.contains('@')) {
-                            return 'Please enter a valid email address.';
+                            return 'Entrez un email valide.';
                           }
                           return null;
                         },
@@ -107,12 +96,12 @@ class _AuthScreenState extends State<AuthScreen> {
                         key: ValueKey('password'),
                         validator: (value) {
                           if (value == null || value.length < 6) {
-                            return 'Password must be at least 6 characters long.';
+                            return 'Le mot de passe doit contenir au moins 6 caractères.';
                           }
                           return null;
                         },
                         decoration:
-                            const InputDecoration(labelText: 'Password'),
+                            const InputDecoration(labelText: 'Mot de passe'),
                         obscureText: true,
                         onSaved: (value) {
                           password = value ?? '';
@@ -130,20 +119,8 @@ class _AuthScreenState extends State<AuthScreen> {
                             textStyle: Theme.of(context).textTheme.button,
                           ),
                           onPressed: _trySubmit,
-                          child: Text(isLogin ? 'Login' : 'Sign Up'),
+                          child: const Text('Se connecter'),
                         ),
-                      TextButton(
-                        onPressed: () {
-                          setState(() {
-                            isLogin = !isLogin;
-                          });
-                        },
-                        child: Text(
-                          isLogin
-                              ? 'Create an account'
-                              : 'I already have an account',
-                        ),
-                      ),
                     ],
                   ),
                 ),
