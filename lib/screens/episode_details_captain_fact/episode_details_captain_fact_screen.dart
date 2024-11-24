@@ -9,8 +9,8 @@ import 'package:url_launcher/url_launcher.dart';
 
 final _httpLink = HttpLink('https://graphql.captainfact.io/');
 const String readVideoData = r'''
-  query redVideoData($youtubeUrl: String) {
-    video(url: $youtubeUrl) {
+  query redVideoData($vimeoUrl: String) {
+    video(url: $vimeoUrl) {
       id
       statements {
         text
@@ -42,11 +42,11 @@ class EpisodeDetailsCaptainFact extends StatelessWidget {
     link: _httpLink,
   );
 
-  Future<QueryResult> getVideoData(String youtubeUrl) {
+  Future<QueryResult> getVideoData(String vimeoUrl) {
     final QueryOptions options = QueryOptions(
       document: gql(readVideoData),
       variables: <String, dynamic>{
-        'youtubeUrl': youtubeUrl,
+        'vimeoUrl': vimeoUrl,
       },
     );
     return client.query(options);

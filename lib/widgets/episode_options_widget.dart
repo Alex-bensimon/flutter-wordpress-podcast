@@ -67,32 +67,6 @@ class EpisodeOptions extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 30),
-          ListItem(
-            iconData: Icons.link,
-            text: "Ouvrir article dans navigateur",
-            onTap: () {
-              Navigator.pop(context);
-              launchUrl(
-                Uri.parse(episode.articleUrl),
-              );
-            },
-          ),
-          ListItem(
-            iconData: Icons.copy,
-            text: "Copier lien article",
-            onTap: () {
-              Navigator.pop(context);
-              Clipboard.setData(ClipboardData(text: episode.articleUrl))
-                  .then((_) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text("Le lien a été copié dans le presse-papiers"),
-                  ),
-                );
-              });
-            },
-          ),
           if (episode.vimeoUrl.isNotEmpty)
             ListItem(
               iconData: Icons.play_circle_outline,

@@ -49,7 +49,6 @@ class _FwpAppState extends State<FwpApp> with WidgetsBindingObserver {
 
       screens = const [
         HomeScreen(),
-        PlayerScreen(),
         SearchScreen(),
         BooksScreen(),
         AboutScreen()
@@ -86,7 +85,6 @@ class _FwpAppState extends State<FwpApp> with WidgetsBindingObserver {
 
       screens = const [
         HomeScreen(),
-        PlayerScreen(),
         SearchScreen(),
         AboutScreen(),
       ];
@@ -110,8 +108,6 @@ class _FwpAppState extends State<FwpApp> with WidgetsBindingObserver {
         )
       ];
     }
-
-    initPlayback();
   }
 
   List<SidebarItem> getSidebar({required bool isDarkMode}) {
@@ -240,28 +236,6 @@ class _FwpAppState extends State<FwpApp> with WidgetsBindingObserver {
     ];
   }
 
-  Future<void> initPlayback() async {
-    await getIt<PlayerManager>().init();
-
-    final playerManager = getIt<PlayerManager>();
-    final episodePlayable =
-        await getIt<DatabaseHandler>().getFirstEpisodePlayable();
-
-    if (episodePlayable.audioFileUrl.isNotEmpty) {
-      playerManager.loadEpisodePlayable(episodePlayable);
-    }
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    // Dispose of the PlayerManager if needed
-    getIt<PlayerManager>().dispose();
-    // Dispose of the DatabaseHandler
-    getIt<DatabaseHandler>().dispose();
-    super.dispose(); // Ensure super.dispose() is called
-  }
-
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.detached) {
@@ -283,22 +257,19 @@ class _FwpAppState extends State<FwpApp> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async => false,
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        theme: lightThemeData,
-        darkTheme: darkThemeData,
-        home: BlocBuilder<NavigationCubit, int>(
-          builder: (_, index) => Scaffold(
-            body: IndexedStack(
-              index: index,
-              children: screens,
-            ),
-            bottomNavigationBar: BottomNavigationBar(
-              type: BottomNavigationBarType.fixed,
-              items: bottomNavigationBarItems,
-              currentIndex: index,
-              onTap: (index) => context.read<NavigationCubit>().update(index),
-            ),
+      child: Scaffold(
+        body: BlocBuilder<NavigationCubit, int>(
+          builder: (_, index) => IndexedStack(
+            index: index,
+            children: screens,
+          ),
+        ),
+        bottomNavigationBar: BlocBuilder<NavigationCubit, int>(
+          builder: (context, index) => BottomNavigationBar(
+            type: BottomNavigationBarType.fixed,
+            items: bottomNavigationBarItems,
+            currentIndex: index,
+            onTap: (index) => context.read<NavigationCubit>().update(index),
           ),
         ),
       ),

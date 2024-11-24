@@ -8,6 +8,8 @@ import 'package:fwp/service_locator.dart';
 import 'package:fwp/repositories/database_handler.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fwp/blocs/navigation/navigation_cubit.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -36,26 +38,28 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Your App Title',
+      debugShowCheckedModeBanner: false,
       home: StreamBuilder<User?>(
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.active) {
             if (snapshot.hasData) {
-              // User is logged in
-              return FwpApp();
+              return MultiBlocProvider(
+                providers: [
+                  BlocProvider<NavigationCubit>(
+                    create: (context) => NavigationCubit(),
+                  ),
+                ],
+                child: FwpApp(),
+              );
             } else {
-              // User is not logged in
               return AuthScreen();
             }
           } else {
-            // Waiting for connection
-            return Scaffold(
+            return const Scaffold(
               body: Center(
                 child: CircularProgressIndicator(),
               ),
