@@ -1,190 +1,110 @@
-import 'package:flutter/foundation.dart';
-import 'package:fwp/models/models.dart';
+import 'dart:convert';
 import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
-
-const tablename = 'episodeplayable';
-
-const id = 0;
-const databaseName = 'database.db';
-const databaseVersion = 5;
+import 'package:fwp/models/episode_model.dart';
 
 class DatabaseHandler {
-  late Database database;
+  static const String tablename = "videos";
+  static const String userTableName = "users";
+  static const String databaseName = "videos.db";
+  Database? _db;
+  bool _initialized = false;
 
   Future<void> init() async {
-    final path = await getDatabasesPath();
+    if (_initialized) return;
 
-    database = await openDatabase(
-      join(path, databaseName),
-      onUpgrade: onUpgrade,
-      onCreate: (db, version) {
-        return db.execute(
-          'CREATE TABLE $tablename(id INTEGER PRIMARY KEY, audioFileUrl TEXT, articleUrl TEXT, date TEXT, title TEXT, imageUrl TEXT, description TEXT, positionInSeconds INTEGER)',
-        );
-      },
-      version: databaseVersion,
-    );
-  }
+    try {
+      final documentsDirectory = await getApplicationDocumentsDirectory();
+      final path = join(documentsDirectory.path, databaseName);
 
-  void onUpgrade(Database db, int oldVersion, int newVersion) {
-    if (oldVersion < newVersion) {
-      switch (oldVersion) {
-        case 3:
-          try {
-            db.execute(
-              "ALTER TABLE $tablename ADD COLUMN articleUrl TEXT description TEXT;",
-            );
-          } catch (error) {
-            if (kDebugMode) {
-              print(error);
-            }
-          }
-          break;
-        case 4:
-          try {
-            db.execute("ALTER TABLE $tablename ADD COLUMN description TEXT;");
-          } catch (error) {
-            if (kDebugMode) {
-              print(error);
-            }
-          }
-          break;
-        default:
-      }
+      _db = await openDatabase(
+        path,
+        version: 1,
+        onCreate: (Database db, int version) async {
+          await db.execute(
+            '''CREATE TABLE $tablename (
+              id INTEGER PRIMARY KEY,
+              title TEXT,
+              date TEXT,
+              vimeoUrl TEXT,
+              articleUrl TEXT,
+              description TEXT,
+              imageUrl TEXT,
+              lastPosition INTEGER,
+              duration TEXT
+            )''',
+          );
+
+          await db.execute(
+            '''CREATE TABLE $userTableName (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              email TEXT UNIQUE,
+              lastLoginDate TEXT
+            )''',
+          );
+        },
+      );
+      _initialized = true;
+    } catch (e) {
+      print('Database initialization error: $e');
+      rethrow;
     }
   }
 
   Future<void> dispose() async {
-    final path = await getDatabasesPath();
-
-    database = await openDatabase(join(path, databaseName));
-
-    await database.close();
-  }
-
-  Future<void> insertEpisodePlayable(EpisodePlayable episodePlayable) async {
-    try {
-      await database.insert(
-        tablename,
-        EpisodePlayable(
-          id: id,
-          title: episodePlayable.title,
-          date: episodePlayable.date,
-          audioFileUrl: episodePlayable.audioFileUrl,
-          articleUrl: episodePlayable.articleUrl,
-          imageUrl: episodePlayable.imageUrl,
-          positionInSeconds: episodePlayable.positionInSeconds,
-          description: episodePlayable.description,
-        ).toMap(),
-        conflictAlgorithm: ConflictAlgorithm.replace,
-      );
-    } catch (error) {
-      if (kDebugMode) {
-        print(error);
-      }
+    if (_db != null && _db!.isOpen) {
+      await _db!.close();
     }
+    _initialized = false;
   }
 
-  Future<void> updateEpisodePlayable(EpisodePlayable episodePlayable) async {
-    final currentEpisodePlayable = await getFirstEpisodePlayable();
+  Future<Database> get database async {
+    if (!_initialized) await init();
+    return _db!;
+  }
 
-    final title = episodePlayable.title.isNotEmpty
-        ? episodePlayable.title
-        : currentEpisodePlayable.title;
-    final date = episodePlayable.date.isNotEmpty
-        ? episodePlayable.date
-        : currentEpisodePlayable.date;
-    final audioFileUrl = episodePlayable.audioFileUrl.isNotEmpty
-        ? episodePlayable.audioFileUrl
-        : currentEpisodePlayable.audioFileUrl;
-    final articleUrl = episodePlayable.articleUrl.isNotEmpty
-        ? episodePlayable.articleUrl
-        : currentEpisodePlayable.articleUrl;
-    final description = episodePlayable.description.isNotEmpty
-        ? episodePlayable.description
-        : currentEpisodePlayable.description;
-    final imageUrl = episodePlayable.imageUrl.isNotEmpty
-        ? episodePlayable.imageUrl
-        : currentEpisodePlayable.imageUrl;
-
-    final positionInSeconds = episodePlayable.positionInSeconds != 0
-        ? episodePlayable.positionInSeconds
-        : currentEpisodePlayable.positionInSeconds;
-
-    final newEpisodePlayable = EpisodePlayable(
-      id: id,
-      title: title,
-      date: date,
-      audioFileUrl: audioFileUrl,
-      articleUrl: articleUrl,
-      imageUrl: imageUrl,
-      positionInSeconds: positionInSeconds,
-      description: description,
+  Future<Episode> getLastWatchedVideo() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      tablename,
+      where: 'vimeoUrl IS NOT NULL AND vimeoUrl != ""',
+      orderBy: 'lastPosition DESC',
+      limit: 1,
     );
 
-    try {
-      await database.update(
-        tablename,
-        newEpisodePlayable.toMap(),
-        where: 'id = ?',
-        whereArgs: [id],
-      );
-    } catch (error) {
-      if (kDebugMode) {
-        print(error);
-      }
-    }
+    return maps.isEmpty
+        ? Episode.empty()
+        : Episode.fromJson(maps.first['id'], jsonEncode(maps.first));
   }
 
-  Future<List<EpisodePlayable>> getAllEpisodePlayables() async {
-    final List<Map<String, dynamic>> maps = await database.query(tablename);
-
-    return List.generate(maps.length, (i) {
-      EpisodePlayable episode;
-      try {
-        episode = EpisodePlayable(
-          id: maps[i]['id'] as int,
-          title: maps[i]['title'] as String,
-          date: maps[i]['date'] as String,
-          audioFileUrl: maps[i]['audioFileUrl'] as String,
-          articleUrl: maps[i]['articleUrl'] as String,
-          imageUrl: maps[i]['imageUrl'] as String,
-          positionInSeconds: maps[i]['positionInSeconds'] as int,
-          description: maps[i]['description'] as String,
-        );
-      } catch (e) {
-        episode = EpisodePlayable(
-          id: 0,
-          title: "",
-          date: "",
-          audioFileUrl: "",
-          articleUrl: "",
-          imageUrl: "",
-          description: "",
-          positionInSeconds: 0,
-        );
-      }
-      return episode;
-    });
+  Future<void> saveVideoProgress(Episode episode, int position) async {
+    final db = await database;
+    await db.insert(
+      tablename,
+      {
+        'id': episode.id,
+        'title': episode.title,
+        'date': episode.date,
+        'vimeoUrl': episode.vimeoUrl,
+        'description': episode.description,
+        'imageUrl': episode.imageUrl,
+        'lastPosition': position,
+        'duration': episode.duration,
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 
-  Future<EpisodePlayable> getFirstEpisodePlayable() async {
-    final episodePlayables = await getAllEpisodePlayables();
-
-    if (episodePlayables.isNotEmpty) {
-      return episodePlayables[0];
-    } else {
-      return EpisodePlayable(
-        id: id,
-        title: "",
-        date: "",
-        audioFileUrl: "",
-        articleUrl: "",
-        imageUrl: "",
-        description: "",
-        positionInSeconds: 0,
-      );
-    }
+  Future<void> saveUserLogin(String email) async {
+    final db = await database;
+    await db.insert(
+      userTableName,
+      {
+        'email': email,
+        'lastLoginDate': DateTime.now().toIso8601String(),
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 }

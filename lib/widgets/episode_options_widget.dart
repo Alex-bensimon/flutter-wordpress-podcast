@@ -49,110 +49,93 @@ class EpisodeOptions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final playerManager = getIt<PlayerManager>();
     final isDarkMode = isAppInDarkMode(context);
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(height: 20),
-        Center(
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: Container(
-              height: 5,
-              width: 42,
-              color: isDarkMode ? Colors.grey : Colors.black38,
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 20),
+          Center(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Container(
+                height: 5,
+                width: 42,
+                color: isDarkMode ? Colors.grey : Colors.black38,
+              ),
             ),
           ),
-        ),
-        const SizedBox(height: 30),
-        ListItem(
-          iconData: Icons.link,
-          text: "Ouvrir article dans navigateur",
-          onTap: () {
-            Navigator.pop(context);
-            launchUrl(
-              Uri.parse(episode.articleUrl),
-            );
-          },
-        ),
-        ListItem(
-          iconData: Icons.copy,
-          text: "Copier lien article",
-          onTap: () {
-            Navigator.pop(context);
-            Clipboard.setData(ClipboardData(text: episode.articleUrl))
-                .then((_) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text("Le lien a été copié dans le presse-papiers"),
-                ),
-              );
-            });
-          },
-        ),
-        ListItem(
-          iconData: Icons.copy,
-          text: "Copier lien fichier audio",
-          onTap: () {
-            Navigator.pop(context);
-            Clipboard.setData(ClipboardData(text: episode.audioFileUrl))
-                .then((_) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text("Le lien a été copié dans le presse-papiers"),
-                ),
-              );
-            });
-          },
-        ),
-        ListItem(
-          iconData: Icons.info_sharp,
-          text: "Plus d'info sur l'épisode",
-          onTap: () async {
-            Navigator.pop(context);
-            if (app == APP.thinkerview.name) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => EpisodeDetailsCaptainFact(
-                    episode: episode,
-                  ),
-                ),
-              );
-            } else {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => EpisodeDetails(
-                    episode: episode,
-                  ),
-                ),
-              );
-            }
-          },
-        ),
-        ListItem(
-          iconData: Icons.play_arrow_rounded,
-          text: "Lire l'épisode",
-          onTap: () async {
-            try {
-              playerManager.playEpisode(episode);
+          const SizedBox(height: 30),
+          ListItem(
+            iconData: Icons.link,
+            text: "Ouvrir article dans navigateur",
+            onTap: () {
               Navigator.pop(context);
-              context.read<NavigationCubit>().update(1);
-            } catch (e) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text("Une erreur est survenue"),
-                ),
+              launchUrl(
+                Uri.parse(episode.articleUrl),
               );
-            }
-          },
-        ),
-        const SizedBox(height: 50),
-      ],
+            },
+          ),
+          ListItem(
+            iconData: Icons.copy,
+            text: "Copier lien article",
+            onTap: () {
+              Navigator.pop(context);
+              Clipboard.setData(ClipboardData(text: episode.articleUrl))
+                  .then((_) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text("Le lien a été copié dans le presse-papiers"),
+                  ),
+                );
+              });
+            },
+          ),
+          if (episode.vimeoUrl.isNotEmpty)
+            ListItem(
+              iconData: Icons.play_circle_outline,
+              text: "Regarder la vidéo",
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => VideoPlayerScreen(episode: episode),
+                  ),
+                );
+              },
+            ),
+          ListItem(
+            iconData: Icons.info_sharp,
+            text: "Plus d'info sur l'épisode",
+            onTap: () async {
+              Navigator.pop(context);
+              if (app == APP.thinkerview.name) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => EpisodeDetailsCaptainFact(
+                      episode: episode,
+                    ),
+                  ),
+                );
+              } else {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => EpisodeDetails(
+                      episode: episode,
+                    ),
+                  ),
+                );
+              }
+            },
+          ),
+          const SizedBox(height: 50),
+        ],
+      ),
     );
   }
 }

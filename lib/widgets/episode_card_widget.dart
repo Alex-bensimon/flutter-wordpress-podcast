@@ -18,7 +18,8 @@ BorderRadius borderRadius = BorderRadius.only(
 class EpisodeCard extends StatelessWidget {
   final String imageUrl;
   final String title;
-  final String audioFileUrl;
+  final String vimeoUrl;
+  final String duration;
   final VoidCallback onPressed;
 
   const EpisodeCard({
@@ -26,7 +27,8 @@ class EpisodeCard extends StatelessWidget {
     required this.onPressed,
     required this.imageUrl,
     required this.title,
-    required this.audioFileUrl,
+    required this.vimeoUrl,
+    required this.duration,
   }) : super(key: key);
 
   BoxConstraints getConstraints(BuildContext context) {
@@ -50,7 +52,7 @@ class EpisodeCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDarkMode = isAppInDarkMode(context);
 
-    if (title == "" || imageUrl == "" || audioFileUrl == "") {
+    if (title == "" || imageUrl == "" || vimeoUrl == "") {
       return const SizedBox.shrink();
     }
 
@@ -76,63 +78,37 @@ class EpisodeCard extends StatelessWidget {
             onTap: onPressed,
             child: Column(
               children: [
-                CachedNetworkImage(
-                  imageUrl: imageUrl,
-                  imageBuilder: (context, imageProvider) => Container(
-                    height: imageHeigth,
-                    constraints: getConstraints(context),
-                    decoration: BoxDecoration(
-                      borderRadius: borderRadius,
-                      image: DecorationImage(
-                        image: imageProvider,
-                        fit: BoxFit.cover,
-                      ),
+                Stack(
+                  children: [
+                    AppImage(
+                      imageUrl: imageUrl,
+                      height: imageHeigth,
                     ),
-                    child: ClipRRect(
-                      borderRadius: borderRadius,
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 40, sigmaY: 40),
+                    if (duration.isNotEmpty)
+                      Positioned(
+                        bottom: 8,
+                        right: 8,
                         child: Container(
-                          alignment: Alignment.center,
-                          color: Colors.white.withOpacity(0.2),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              image: DecorationImage(
-                                image: imageProvider,
-                                fit: BoxFit.fitHeight,
-                              ),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.8),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            duration,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ),
                       ),
-                    ),
-                  ),
-                  placeholder: (context, url) => Padding(
-                    padding: EdgeInsets.symmetric(
-                      vertical: imageHeigth / 2 - circularProgressIndicatorSize,
-                    ),
-                    child: SizedBox(
-                      width: circularProgressIndicatorSize,
-                      height: circularProgressIndicatorSize,
-                      child: const CircularProgressIndicator(),
-                    ),
-                  ),
-                  errorWidget: (context, url, error) => SizedBox(
-                    height: imageHeigth,
-                    child: const Padding(
-                      padding: EdgeInsets.symmetric(
-                        vertical: 24,
-                      ),
-                      child: AppImage(),
-                    ),
-                  ),
+                  ],
                 ),
-                Container(
-                  padding: EdgeInsets.symmetric(
-                    vertical: verticalPadding,
-                    horizontal: 20,
-                  ),
-                  constraints: getConstraints(context),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
                   child: Text(
                     title,
                     style: Theme.of(context).textTheme.headline6,

@@ -59,7 +59,7 @@ class EpisodeDetailsCaptainFact extends StatelessWidget {
     final String dateformat = DateFormat.yMMMMEEEEd().format(dateTime);
     final isDarkMode = isAppInDarkMode(context);
 
-    if (episode.youtubeUrl == null) {
+    if (episode.vimeoUrl.isEmpty) {
       return AdaptiveScaffold(
         titleBar: const TitleBar(),
         appBar: AppBar(
@@ -86,7 +86,7 @@ class EpisodeDetailsCaptainFact extends StatelessWidget {
               ),
             ),
             const ErrorMessage(
-              message: "Impossible de récupérer l'url youtube",
+              message: "Impossible de récupérer l'url vimeo",
             )
           ],
         ),
@@ -109,7 +109,7 @@ class EpisodeDetailsCaptainFact extends StatelessWidget {
           ),
         ),
         body: FutureBuilder(
-          future: getVideoData(episode.youtubeUrl!),
+          future: getVideoData(episode.vimeoUrl!),
           builder: (BuildContext context, AsyncSnapshot<QueryResult> snapshot) {
             if (snapshot.hasData) {
               final Map<String, dynamic>? data = snapshot.data?.data;
@@ -220,7 +220,7 @@ class Header extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 20),
-        if (episode.youtubeUrl != null)
+        if (episode.vimeoUrl != null)
           Column(
             children: [
               GestureDetector(

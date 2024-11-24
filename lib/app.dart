@@ -12,6 +12,7 @@ import 'package:fwp/screens/screens.dart';
 import 'package:fwp/styles/styles.dart';
 import 'package:macos_ui/macos_ui.dart';
 import 'package:provider/provider.dart';
+import 'package:fwp/service_locator.dart';
 
 class FwpApp extends StatefulWidget {
   const FwpApp({
@@ -22,7 +23,7 @@ class FwpApp extends StatefulWidget {
   State<FwpApp> createState() => _FwpAppState();
 }
 
-class _FwpAppState extends State<FwpApp> {
+class _FwpAppState extends State<FwpApp> with WidgetsBindingObserver {
   List<String> screensTitle = ["Accueil", "Lecteur", "Livres", "A propos"];
   List<Widget> screens = [];
   List<BottomNavigationBarItem> bottomNavigationBarItems = [];
@@ -37,6 +38,7 @@ class _FwpAppState extends State<FwpApp> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
 
     if (app == APP.thinkerview.name) {
       lightThemeData = ligthThemeDataThinkerview;
@@ -239,7 +241,6 @@ class _FwpAppState extends State<FwpApp> {
   }
 
   Future<void> initPlayback() async {
-    await getIt<DatabaseHandler>().init();
     await getIt<PlayerManager>().init();
 
     final playerManager = getIt<PlayerManager>();
@@ -252,11 +253,21 @@ class _FwpAppState extends State<FwpApp> {
   }
 
   @override
-  Future<void> dispose() async {
-    await getIt<PlayerManager>().dispose();
-    await getIt<DatabaseHandler>().dispose();
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    // Dispose of the PlayerManager if needed
+    getIt<PlayerManager>().dispose();
+    // Dispose of the DatabaseHandler
+    getIt<DatabaseHandler>().dispose();
+    super.dispose(); // Ensure super.dispose() is called
+  }
 
-    super.dispose();
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.detached) {
+      // Clean up when app is closing
+      getIt<DatabaseHandler>().dispose();
+    }
   }
 
   String getTitle() {
@@ -270,65 +281,24 @@ class _FwpAppState extends State<FwpApp> {
 
   @override
   Widget build(BuildContext context) {
-    final brightness = SchedulerBinding.instance.window.platformBrightness;
-    final isDarkMode = brightness == Brightness.dark;
-
-    if (Platform.isMacOS) {
-      return ChangeNotifierProvider(
-        create: (_) => AppTheme(),
-        builder: (context, _) {
-          final appTheme = context.watch<AppTheme>();
-          return MacosApp(
-            title: getTitle(),
-            theme: lightThemeDataMacOS,
-            darkTheme: darkThemeDataMacOS,
-            themeMode: appTheme.mode,
-            debugShowCheckedModeBanner: false,
-            home: BlocBuilder<NavigationCubit, int>(
-              builder: (_, index) => MacosWindow(
-                sidebar: Sidebar(
-                  minWidth: 200,
-                  builder: (context, controller) {
-                    return SidebarItems(
-                      currentIndex: index,
-                      onChanged: (index) =>
-                          context.read<NavigationCubit>().update(index),
-                      scrollController: controller,
-                      items: getSidebar(isDarkMode: isDarkMode),
-                    );
-                  },
-                ),
-                child: MaterialApp(
-                  debugShowCheckedModeBanner: false,
-                  theme: lightThemeData,
-                  darkTheme: darkThemeData,
-                  home: IndexedStack(
-                    index: index,
-                    children: screens,
-                  ),
-                ),
-              ),
+    return WillPopScope(
+      onWillPop: () async => false,
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: lightThemeData,
+        darkTheme: darkThemeData,
+        home: BlocBuilder<NavigationCubit, int>(
+          builder: (_, index) => Scaffold(
+            body: IndexedStack(
+              index: index,
+              children: screens,
             ),
-          );
-        },
-      );
-    }
-
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: lightThemeData,
-      darkTheme: darkThemeData,
-      home: BlocBuilder<NavigationCubit, int>(
-        builder: (_, index) => Scaffold(
-          body: IndexedStack(
-            index: index,
-            children: screens,
-          ),
-          bottomNavigationBar: BottomNavigationBar(
-            type: BottomNavigationBarType.fixed,
-            items: bottomNavigationBarItems,
-            currentIndex: index,
-            onTap: (index) => context.read<NavigationCubit>().update(index),
+            bottomNavigationBar: BottomNavigationBar(
+              type: BottomNavigationBarType.fixed,
+              items: bottomNavigationBarItems,
+              currentIndex: index,
+              onTap: (index) => context.read<NavigationCubit>().update(index),
+            ),
           ),
         ),
       ),

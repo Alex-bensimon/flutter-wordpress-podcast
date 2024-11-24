@@ -35,36 +35,7 @@ Future<SentryEvent?> beforeSend(SentryEvent event, {dynamic hint}) async {
 
 Future<void> setupApp() async {
   initializeDateFormatting('fr_FR');
-  WidgetsFlutterBinding.ensureInitialized();
 
-  SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]);
-
-  await dotenv.load();
-  await setupServiceLocator();
-
-  final dsn = dotenv.env['DSN'];
-
+  // Set up HTTP overrides if needed
   HttpOverrides.global = MyHttpOverrides();
-
-  await SentryFlutter.init(
-    (options) {
-      options.dsn = dsn;
-      options.sampleRate = kDebugMode ? 0 : 1.0;
-      options.tracesSampleRate = 0.2;
-      options.beforeSend = beforeSend;
-    },
-    appRunner: () => runApp(
-      MultiBlocProvider(
-        providers: [
-          BlocProvider(
-            create: (_) => NavigationCubit(),
-          ),
-        ],
-        child: const FwpApp(),
-      ),
-    ),
-  );
 }

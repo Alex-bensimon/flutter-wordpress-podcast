@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fwp/notifiers/notifiers.dart';
 import 'package:fwp/repositories/repositories.dart';
+import 'package:fwp/service_locator.dart';
 
 const iconSize = 50.0;
 

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:fwp/models/models.dart';
 import 'package:fwp/repositories/repositories.dart';
 import 'package:fwp/styles/styles.dart';
@@ -15,10 +14,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final HttpRepository httpRepository = HttpRepository();
-  final _pagingController = PagingController<int, Episode>(
-    firstPageKey: 1,
-  );
+  final FirestoreRepository firestoreRepository = FirestoreRepository();
+  final _pagingController = PagingController<int, Episode>(firstPageKey: 1);
 
   @override
   void initState() {
@@ -36,24 +33,19 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _fetchPage(int pageKey) async {
     try {
-      List<Episode> episodes = [];
+      final episodes = await firestoreRepository.getVideos(page: pageKey);
 
-      final app = dotenv.env['APP'];
-
-      if (app == APP.thinkerview.name) {
-        episodes = await httpRepository.getEpisodesFromCategory(
-          page: pageKey,
-          categories: 9,
-        );
-      } else if (app == APP.causecommune.name) {
-        episodes = await httpRepository.getEpisodes(
-          page: pageKey,
-        );
+      if (episodes.isEmpty && pageKey == 1) {
+        _pagingController.error = 'No videos found';
+        return;
       }
 
-      final List<Episode> newItems = episodes;
-      final nextPageKey = pageKey + 1;
-      _pagingController.appendPage(newItems, nextPageKey);
+      final isLastPage = episodes.length < 10;
+      if (isLastPage) {
+        _pagingController.appendLastPage(episodes);
+      } else {
+        _pagingController.appendPage(episodes, pageKey + 1);
+      }
     } catch (error) {
       _pagingController.error = error;
     }
@@ -61,42 +53,19 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = isAppInDarkMode(context);
-
     return AdaptiveScaffold(
-      titleBar: TitleBar(
-        title: Text(
-          "Derniers épisodes",
-          style: Theme.of(context).textTheme.headline6,
-        ),
-      ),
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        title: Text(
-          "Derniers épisodes",
-          style: Theme.of(context).textTheme.headline6,
-        ),
-      ),
-      body: RefreshIndicator(
-        onRefresh: () => Future.sync(
-          () => _pagingController.refresh(),
-        ),
-        child: PagedListView.separated(
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: PagedListView<int, Episode>(
           pagingController: _pagingController,
           builderDelegate: PagedChildBuilderDelegate<Episode>(
-            animateTransitions: true,
-            firstPageErrorIndicatorBuilder: (_) => ErrorIndicator(
-              onTryAgain: _pagingController.refresh,
-            ),
             itemBuilder: (context, episode, index) => EpisodeCard(
               imageUrl: episode.imageUrl,
               title: episode.title,
-              audioFileUrl: episode.audioFileUrl,
+              vimeoUrl: episode.vimeoUrl,
+              duration: episode.duration,
               onPressed: () {
                 showModalBottomSheet<void>(
-                  backgroundColor: isDarkMode ? Colors.grey[800] : Colors.white,
-                  isScrollControlled: true,
                   shape: const RoundedRectangleBorder(
                     borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(20),
@@ -109,9 +78,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
               },
             ),
-          ),
-          separatorBuilder: (context, index) => const SizedBox(
-            height: 2,
           ),
         ),
       ),

@@ -2,8 +2,9 @@ import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:fwp/models/models.dart';
 import 'package:fwp/notifiers/notifiers.dart';
-import 'package:fwp/repositories/repositories.dart';
+import 'package:fwp/service_locator.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:fwp/repositories/database_handler.dart';
 
 class PlayerManager {
   // Listeners: Updates going to the UI
@@ -33,8 +34,6 @@ class PlayerManager {
     final imageUrl = episode?.imageUrl ?? "";
 
     final artUri = Uri.parse(imageUrl);
-    final audioFileUrl = episode?.audioFileUrl ?? "";
-    final articleUrl = episode?.articleUrl ?? "";
     final description = episode?.description ?? "";
 
     final mediaItem = MediaItem(
@@ -43,8 +42,6 @@ class PlayerManager {
       artUri: artUri,
       title: title,
       extras: {
-        'url': audioFileUrl,
-        'articleUrl': articleUrl,
         'description': description,
       },
     );
@@ -53,8 +50,6 @@ class PlayerManager {
       EpisodePlayable(
         date: episode?.date ?? "",
         id: 0,
-        audioFileUrl: audioFileUrl,
-        articleUrl: articleUrl,
         title: title,
         imageUrl: imageUrl,
         description: description,
@@ -200,11 +195,15 @@ class PlayerManager {
 
   Future<void> dispose() async => _audioHandler.customAction('dispose');
 
-  void loadEpisodePlayable(EpisodePlayable episodePlayable) =>
-      _audioHandler.customAction(
-        'loadEpisodePlayable',
-        {
-          "episodePlayable": episodePlayable,
-        },
-      );
+  void loadEpisodePlayable(EpisodePlayable episodePlayable) {
+    _audioHandler.customAction(
+      'loadEpisodePlayable',
+      {
+        "episodePlayable": episodePlayable,
+      },
+    );
+
+    // Save to database
+    getIt<DatabaseHandler>().insertEpisodePlayable(episodePlayable);
+  }
 }

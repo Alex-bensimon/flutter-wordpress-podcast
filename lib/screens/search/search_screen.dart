@@ -205,7 +205,8 @@ class _SearchScreenState extends State<SearchScreen> {
       itemBuilder: (context, index) => EpisodeCard(
         imageUrl: episodes[index].imageUrl,
         title: episodes[index].title,
-        audioFileUrl: episodes[index].audioFileUrl,
+        vimeoUrl: episodes[index].vimeoUrl,
+        duration: episodes[index].duration,
         onPressed: () {
           showModalBottomSheet<void>(
             shape: const RoundedRectangleBorder(

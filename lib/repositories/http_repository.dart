@@ -10,16 +10,13 @@ const causeCommuneUrl = "cause-commune.fm";
 List<Episode> removeEmptyEpisodes(List<Episode> episodes) {
   return episodes
       .where(
-        (element) =>
-            element.audioFileUrl.isNotEmpty &&
-            element.imageUrl.isNotEmpty &&
-            element.title.isNotEmpty,
+        (element) => element.imageUrl.isNotEmpty && element.title.isNotEmpty,
       )
       .toList();
 }
 
 class HttpRepository {
-  final app = dotenv.env['APP'];
+  final String app = dotenv.env['APP'] ?? APP.thinkerview.name;
 
   String getBaseUrl() {
     var baseUrl = "";
@@ -65,7 +62,7 @@ class HttpRepository {
       final List<Episode> episodes = body.map(
         (dynamic item) {
           final Episode newEpisode =
-              Episode.fromJson(item as Map<String, dynamic>);
+              Episode.fromJson(item as Map<String, dynamic>, app);
           return newEpisode;
         },
       ).toList();
@@ -90,7 +87,7 @@ class HttpRepository {
       final List<Episode> episodes = body.map(
         (dynamic item) {
           final Episode newEpisode =
-              Episode.fromJson(item as Map<String, dynamic>);
+              Episode.fromJson(item as Map<String, dynamic>, app);
           return newEpisode;
         },
       ).toList();
@@ -137,7 +134,7 @@ class HttpRepository {
       final List<Episode> episodes = body.map(
         (dynamic item) {
           final Episode newEpisode =
-              Episode.fromJson(item as Map<String, dynamic>);
+              Episode.fromJson(item as Map<String, dynamic>, app);
           return newEpisode;
         },
       ).toList();

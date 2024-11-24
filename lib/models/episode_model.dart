@@ -9,59 +9,64 @@ class Episode {
   final int id;
   final String title;
   final String date;
-  final String audioFileUrl;
   final String imageUrl;
-  final String articleUrl;
-  final String? youtubeUrl;
+  final String vimeoUrl;
   final String description;
+  final String duration;
 
   Episode({
     required this.id,
-    required this.audioFileUrl,
-    required this.articleUrl,
     required this.date,
     required this.title,
     required this.imageUrl,
+    required this.vimeoUrl,
     required this.description,
-    this.youtubeUrl,
+    this.duration = '',
   });
 
-  factory Episode.fromJson(Map<String, dynamic> json) {
-    final app = dotenv.env['APP'];
+  factory Episode.fromJson(Map<String, dynamic> json, String app) {
     final unescape = HtmlUnescape();
+
+    String formatDuration(dynamic duration) {
+      if (duration == null) return '';
+      try {
+        final seconds = int.parse(duration.toString());
+        final hours = seconds ~/ 3600;
+        final minutes = (seconds % 3600) ~/ 60;
+        final remainingSeconds = seconds % 60;
+
+        return '${hours.toString().padLeft(2, '0')}:'
+            '${minutes.toString().padLeft(2, '0')}:'
+            '${remainingSeconds.toString().padLeft(2, '0')}';
+      } catch (e) {
+        return '';
+      }
+    }
 
     try {
       final int id = json['id'] as int;
       final String title =
           unescape.convert(json['title']['rendered'] as String);
       final String date = json['date'] as String;
-      final String audioFileUrl = json['meta']['audio_file'] as String;
-      final String articleUrl = json['link'] as String;
       final String description = json["content"]["rendered"] as String;
       String imageUrl = "";
-      String? youtubeUrl;
+      String vimeoUrl = "";
 
       if (APP.thinkerview.name == app) {
         imageUrl = json['episode_featured_image'] as String;
-        /* in case acf plugin isn't working */
         try {
           final rendered = json['content']['rendered'] as String;
-          final regexp = RegExp(
-            r'((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube-nocookie\.com|youtu.be))(\/(?:[\w\-]+\?v=|embed\/|v\/)?)([\w\-]+)(\S+)?',
-          );
+          final regexp = RegExp(r'vimeo\.com\/(\d+)(?:\/([a-zA-Z0-9]+))?');
           final match = regexp.firstMatch(rendered);
-          final matchedText = match?.group(0);
-          if (matchedText != null) {
-            final id = matchedText.replaceAll(
-              "https://www.youtube-nocookie.com/embed/",
-              "",
-            );
-            youtubeUrl =
-                "https://www.youtube.com/watch?v=${id.replaceAll('"', "")}";
+          if (match != null) {
+            vimeoUrl = match.group(0) ?? '';
+            if (kDebugMode) {
+              print('Found Vimeo URL: $vimeoUrl');
+            }
           }
         } catch (error) {
           if (kDebugMode) {
-            print(error);
+            print('Error parsing Vimeo URL: $error');
           }
         }
       } else if (APP.causecommune.name == app) {
@@ -72,11 +77,10 @@ class Episode {
         id: id,
         title: title,
         date: date,
-        audioFileUrl: audioFileUrl,
-        articleUrl: articleUrl,
         imageUrl: imageUrl,
-        youtubeUrl: youtubeUrl,
+        vimeoUrl: vimeoUrl,
         description: description,
+        duration: formatDuration(json['duration']),
       );
     } catch (error) {
       if (kDebugMode) {
@@ -86,58 +90,42 @@ class Episode {
         id: 0,
         date: "",
         title: "",
-        audioFileUrl: "",
-        articleUrl: "",
         imageUrl: "",
+        vimeoUrl: "",
         description: "",
+        duration: "",
       );
     }
   }
 
-  @override
-  String toString() {
-    return 'Episode{id: $id, date: $date, audioFileUrl: $audioFileUrl, imageUrl: $imageUrl, title: $title, articleUrl $articleUrl, description $description}';
+  factory Episode.fromVimeoJson(Map<String, dynamic> json) {
+    return Episode(
+      id: int.parse(json['uri'].split('/').last),
+      title: json['name'] ?? '',
+      date: json['created_time'] ?? '',
+      imageUrl: json['pictures']['sizes'].firstWhere(
+            (size) => size['width'] >= 640,
+            orElse: () => json['pictures']['sizes'].last,
+          )['link'] ??
+          '',
+      vimeoUrl: json['link'] ?? '',
+      description: json['description'] ?? '',
+      duration: json['duration']?.toString() ?? '',
+    );
   }
-}
 
-class EpisodePlayable extends Episode {
-  int positionInSeconds;
-
-  @override
-  EpisodePlayable({
-    required this.positionInSeconds,
-    required int id,
-    required String audioFileUrl,
-    required String date,
-    required String title,
-    required String imageUrl,
-    required String articleUrl,
-    required String description,
-  }) : super(
-          id: id,
-          date: date,
-          audioFileUrl: audioFileUrl,
-          articleUrl: articleUrl,
-          imageUrl: imageUrl,
-          title: title,
-          description: description,
-        );
-
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'date': date,
-      'audioFileUrl': audioFileUrl,
-      'articleUrl': articleUrl,
-      'imageUrl': imageUrl,
-      'title': title,
-      'description': description,
-      'positionInSeconds': positionInSeconds,
-    };
-  }
+  factory Episode.empty() => Episode(
+        id: -1,
+        title: '',
+        date: '',
+        imageUrl: '',
+        vimeoUrl: '',
+        description: '',
+        duration: '',
+      );
 
   @override
   String toString() {
-    return 'EpisodePlayable{id: $id, date: $date, audioFileUrl: $audioFileUrl, imageUrl: $imageUrl, title: $title, positionInSeconds: $positionInSeconds, articleUrl: $articleUrl, description $description}';
+    return 'Episode{id: $id, date: $date, imageUrl: $imageUrl, title: $title, description: $description}';
   }
 }
