@@ -7,3 +7,4 @@ export './captain_fact_grades.dart';
 export './episode_card_widget.dart';
 export './episode_options_widget.dart';
 export './error_indicator_widget.dart';
+export './video_player_widget.dart';

@@ -2,7 +2,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fwp/styles/fonts.dart';
-import 'package:macos_ui/macos_ui.dart';
 
 bool isAppInDarkMode(BuildContext context) {
   final brightness = MediaQuery.of(context).platformBrightness;
@@ -58,47 +57,6 @@ final darkThemeDataCauseCommune = ThemeData(
   ),
 );
 
-// CAUSE COMMUNE
-// macOS
-
-final darkThemeDataMacOSCauseCommune = MacosThemeData(
-  brightness: Brightness.dark,
-  primaryColor: primaryCauseCommune,
-  canvasColor: CupertinoColors.systemBackground.darkElevatedColor,
-  pushButtonTheme: const PushButtonThemeData(
-    color: primaryCauseCommune,
-    disabledColor: Colors.grey,
-    secondaryColor: Colors.amber,
-  ),
-  dividerColor: Colors.black,
-  macosIconButtonTheme: const MacosIconButtonThemeData(
-    backgroundColor: primaryCauseCommune,
-    disabledColor: Colors.grey,
-  ),
-  iconTheme: const MacosIconThemeData(
-    color: Colors.white,
-  ),
-);
-
-final lightThemeDataMacOSCauseCommune = MacosThemeData(
-  brightness: Brightness.light,
-  primaryColor: primaryCauseCommune,
-  canvasColor: CupertinoColors.systemBackground,
-  pushButtonTheme: const PushButtonThemeData(
-    color: primaryCauseCommune,
-    disabledColor: Colors.grey,
-    secondaryColor: Colors.amber,
-  ),
-  dividerColor: Colors.white,
-  macosIconButtonTheme: const MacosIconButtonThemeData(
-    backgroundColor: primaryCauseCommune,
-    disabledColor: Colors.grey,
-  ),
-  iconTheme: const MacosIconThemeData(
-    color: Colors.white,
-  ),
-);
-
 // THINKERVIEW
 // iOS & Android
 
@@ -127,41 +85,6 @@ final darkThemeDataThinkerview = ThemeData(
   textTheme: Fonts.textDarkTheme,
   appBarTheme: const AppBarTheme(
     systemOverlayStyle: SystemUiOverlayStyle.light,
-  ),
-);
-
-// THINKERVIEW
-// macOS
-
-final lightThemeDataMacOSThinkerview = MacosThemeData(
-  brightness: Brightness.light,
-  primaryColor: Colors.teal,
-  canvasColor: CupertinoColors.systemBackground,
-  pushButtonTheme: const PushButtonThemeData(
-    color: Colors.teal,
-    disabledColor: Colors.grey,
-    secondaryColor: Colors.amber,
-  ),
-  dividerColor: Colors.white,
-  macosIconButtonTheme: const MacosIconButtonThemeData(
-    backgroundColor: Colors.teal,
-    disabledColor: Colors.grey,
-  ),
-);
-
-final darkThemeDataMacOSThinkerview = MacosThemeData(
-  brightness: Brightness.dark,
-  primaryColor: Colors.teal,
-  canvasColor: CupertinoColors.systemBackground.darkElevatedColor,
-  pushButtonTheme: const PushButtonThemeData(
-    color: Colors.teal,
-    disabledColor: Colors.grey,
-    secondaryColor: Colors.amber,
-  ),
-  dividerColor: Colors.black,
-  macosIconButtonTheme: const MacosIconButtonThemeData(
-    backgroundColor: Colors.teal,
-    disabledColor: Colors.grey,
   ),
 );
 

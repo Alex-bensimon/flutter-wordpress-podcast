@@ -5,7 +5,6 @@ import 'package:fwp/repositories/repositories.dart';
 import 'package:fwp/styles/styles.dart';
 import 'package:fwp/widgets/widgets.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
-import 'package:macos_ui/macos_ui.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -64,12 +63,6 @@ class _HomeScreenState extends State<HomeScreen> {
     final isDarkMode = isAppInDarkMode(context);
 
     return AdaptiveScaffold(
-      titleBar: TitleBar(
-        title: Text(
-          "Derniers épisodes",
-          style: Theme.of(context).textTheme.headline6,
-        ),
-      ),
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.transparent,

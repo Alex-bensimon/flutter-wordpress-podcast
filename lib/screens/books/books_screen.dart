@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:fwp/styles/styles.dart';
 import 'package:fwp/widgets/widgets.dart';
-import 'package:macos_ui/macos_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 const bookUrl =
@@ -85,12 +84,6 @@ class _BooksScreenState extends State<BooksScreen> {
     final isDarkMode = isAppInDarkMode(context);
 
     return AdaptiveScaffold(
-      titleBar: TitleBar(
-        title: Text(
-          "Livres",
-          style: Theme.of(context).textTheme.headline6,
-        ),
-      ),
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.transparent,

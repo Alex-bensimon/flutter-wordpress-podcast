@@ -5,7 +5,6 @@ import 'package:fwp/models/models.dart';
 import 'package:fwp/repositories/repositories.dart';
 import 'package:fwp/styles/styles.dart';
 import 'package:fwp/widgets/widgets.dart';
-import 'package:macos_ui/macos_ui.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({Key? key}) : super(key: key);
@@ -63,7 +62,6 @@ class _SearchScreenState extends State<SearchScreen> {
     final isDarkMode = isAppInDarkMode(context);
 
     return AdaptiveScaffold(
-      titleBar: TitleBar(title: renderTitle(isDarkMode: isDarkMode)),
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.transparent,
@@ -118,16 +116,20 @@ class _SearchScreenState extends State<SearchScreen> {
     }
 
     if (Platform.isMacOS) {
-      return MacosTextField(
-        prefix: const Icon(
-          Icons.search,
-          size: 20,
-        ),
-        placeholder: "Chercher ici",
-        placeholderStyle: TextStyle(color: Colors.grey[500]),
-        decoration: BoxDecoration(
-          color: isDarkMode ? Colors.black : Colors.grey[200],
-          borderRadius: const BorderRadius.all(Radius.circular(6)),
+      return TextField(
+        decoration: InputDecoration(
+          prefixIcon: const Icon(
+            Icons.search,
+            size: 20,
+          ),
+          hintText: "Chercher ici",
+          hintStyle: TextStyle(color: Colors.grey[500]),
+          filled: true,
+          fillColor: isDarkMode ? Colors.black : Colors.grey[200],
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(6),
+            borderSide: BorderSide.none,
+          ),
         ),
         style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
         autofocus: true,

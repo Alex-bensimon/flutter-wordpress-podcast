@@ -8,7 +8,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:fwp/models/models.dart';
 import 'package:fwp/widgets/widgets.dart';
-import 'package:macos_ui/macos_ui.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -72,12 +71,6 @@ class _AboutScreenState extends State<AboutScreen> {
   @override
   Widget build(BuildContext context) {
     return AdaptiveScaffold(
-      titleBar: TitleBar(
-        title: Text(
-          "A propos",
-          style: Theme.of(context).textTheme.headline6,
-        ),
-      ),
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.transparent,
@@ -122,19 +115,16 @@ class _AboutScreenState extends State<AboutScreen> {
                   ),
                 ),
               ),
-              if (app == APP.thinkerview.name && !Platform.isMacOS)
+              if (app == APP.thinkerview.name)
                 Padding(
                   padding: const EdgeInsets.only(top: 10),
                   child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(primary: Colors.brown),
+                    style:
+                        ElevatedButton.styleFrom(backgroundColor: Colors.brown),
                     onPressed: () => launchUrl(
-                      Platform.isIOS
-                          ? Uri.parse(
-                              "https://docs.google.com/forms/d/e/1FAIpQLSfTR0BczGWN9WIeXfnK6BogAUW1ZP9WV-WDlPB7rLkwJSFPSg/viewform?usp=sf_link",
-                            )
-                          : Uri.parse(
-                              "https://docs.google.com/forms/d/e/1FAIpQLSc0S2evuA0Klqoqyo5WNRcjUxm2J5asb0ASf5d0pRKBccwqOw/viewform?usp=sf_link",
-                            ),
+                      Uri.parse(
+                        "https://docs.google.com/forms/d/e/1FAIpQLSfTR0BczGWN9WIeXfnK6BogAUW1ZP9WV-WDlPB7rLkwJSFPSg/viewform?usp=sf_link",
+                      ),
                     ),
                     child: const Text("Votre feedback sur l'app!"),
                   ),

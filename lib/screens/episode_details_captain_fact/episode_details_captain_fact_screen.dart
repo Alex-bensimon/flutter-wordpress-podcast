@@ -4,7 +4,6 @@ import 'package:fwp/styles/styles.dart';
 import 'package:fwp/widgets/widgets.dart';
 import 'package:graphql/client.dart';
 import 'package:intl/intl.dart';
-import 'package:macos_ui/macos_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 final _httpLink = HttpLink('https://graphql.captainfact.io/');
@@ -61,7 +60,6 @@ class EpisodeDetailsCaptainFact extends StatelessWidget {
 
     if (episode.youtubeUrl == null) {
       return AdaptiveScaffold(
-        titleBar: const TitleBar(),
         appBar: AppBar(
           elevation: 0,
           backgroundColor: Colors.transparent,
@@ -93,7 +91,6 @@ class EpisodeDetailsCaptainFact extends StatelessWidget {
       );
     } else {
       return AdaptiveScaffold(
-        titleBar: const TitleBar(),
         appBar: AppBar(
           elevation: 0,
           backgroundColor: Colors.transparent,

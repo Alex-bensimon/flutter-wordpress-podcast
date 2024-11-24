@@ -3,6 +3,7 @@ import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:fwp/models/models.dart';
 import 'package:fwp/styles/styles.dart';
 import 'package:intl/intl.dart';
+import 'package:fwp/widgets/video_player_widget.dart';
 
 class EpisodeDetails extends StatelessWidget {
   final Episode episode;
@@ -51,6 +52,9 @@ class EpisodeDetails extends StatelessWidget {
                   style: Theme.of(context).textTheme.headline6,
                 ),
               ),
+              const SizedBox(height: 20),
+              if (episode.youtubeUrl != null)
+                VideoPlayerWidget(videoUrl: episode.youtubeUrl!),
               const SizedBox(height: 20),
               HtmlWidget(episode.description),
               const SizedBox(height: 20),
