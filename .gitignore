@@ -53,3 +53,4 @@ app.*.map.json
 'Firebase Project Settings'
 lib/firebase_options.dart
 Firebase Project Settings.plist
+Google Service Info - Firebase Settings.plist
