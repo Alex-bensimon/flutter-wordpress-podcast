@@ -3,6 +3,7 @@ import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:fwp/models/episode_model.dart';
+import 'package:fwp/services/video_downloader.dart';
 
 class DatabaseHandler {
   static const String tablename = "videos";
@@ -106,5 +107,47 @@ class DatabaseHandler {
       },
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
+  }
+
+  Future<void> saveDownloadedVideo(Episode episode) async {
+    final db = await database;
+    await db.insert(
+      'downloaded_videos',
+      {
+        'id': episode.id,
+        'title': episode.title,
+        'download_date': DateTime.now().toIso8601String(),
+        'file_path':
+            '${await VideoDownloader.getVideoDirectory()}/${episode.id}.mp4',
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<bool> isVideoDownloaded(int videoId) async {
+    final db = await database;
+    final result = await db.query(
+      'downloaded_videos',
+      where: 'id = ?',
+      whereArgs: [videoId],
+    );
+    return result.isNotEmpty;
+  }
+
+  Future<List<Episode>> getDownloadedVideos() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query('downloaded_videos');
+
+    return maps
+        .map((map) => Episode(
+              id: map['id'] as int,
+              title: map['title'] as String,
+              date: map['download_date'] as String,
+              imageUrl: '',
+              vimeoUrl: map['file_path'] as String,
+              description: '',
+              duration: '',
+            ))
+        .toList();
   }
 }

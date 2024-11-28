@@ -8,18 +8,20 @@ import 'package:fwp/repositories/repositories.dart';
 import 'package:fwp/screens/screens.dart';
 import 'package:fwp/styles/styles.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:fwp/services/video_downloader.dart';
+import 'package:get_it/get_it.dart';
 
 const paddingItems = 18.0;
 
 class ListItem extends StatelessWidget {
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   final IconData iconData;
   final String text;
   const ListItem({
     Key? key,
     required this.iconData,
     required this.text,
-    required this.onTap,
+    this.onTap,
   }) : super(key: key);
 
   @override
@@ -105,6 +107,73 @@ class EpisodeOptions extends StatelessWidget {
                   ),
                 );
               }
+            },
+          ),
+          FutureBuilder<bool>(
+            future: VideoDownloader.isVideoDownloaded(episode),
+            builder: (context, snapshot) {
+              final isDownloaded = snapshot.data ?? false;
+
+              return ListItem(
+                iconData: isDownloaded ? Icons.download_done : Icons.download,
+                text:
+                    isDownloaded ? "Vidéo téléchargée" : "Télécharger la vidéo",
+                onTap: isDownloaded
+                    ? null
+                    : () async {
+                        try {
+                          Navigator.pop(context);
+                          print(
+                              'Starting download process for episode ${episode.id}');
+
+                          final loadingDialog = showDialog(
+                            context: context,
+                            barrierDismissible: false,
+                            builder: (context) => const AlertDialog(
+                              content: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  CircularProgressIndicator(),
+                                  SizedBox(height: 16),
+                                  Text('Téléchargement en cours...'),
+                                ],
+                              ),
+                            ),
+                          );
+
+                          try {
+                            print('Attempting to download video');
+                            final file =
+                                await VideoDownloader.downloadVideo(episode);
+                            print(
+                                'Video downloaded successfully to: ${file.path}');
+
+                            print('Saving to database');
+                            await GetIt.I<DatabaseHandler>()
+                                .saveDownloadedVideo(episode);
+                            print('Saved to database');
+
+                            Navigator.pop(context); // Close loading dialog
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content:
+                                      Text('Vidéo téléchargée avec succès')),
+                            );
+                          } catch (e) {
+                            print('Download error: $e');
+                            Navigator.pop(context); // Close loading dialog
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Erreur: $e')),
+                            );
+                          }
+                        } catch (e) {
+                          print('Outer error: $e');
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Erreur: $e')),
+                          );
+                        }
+                      },
+              );
             },
           ),
           const SizedBox(height: 50),

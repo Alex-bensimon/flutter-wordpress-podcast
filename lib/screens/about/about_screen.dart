@@ -8,7 +8,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:fwp/models/models.dart';
 import 'package:fwp/widgets/widgets.dart';
-import 'package:macos_ui/macos_ui.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -73,12 +72,6 @@ class _AboutScreenState extends State<AboutScreen> {
   @override
   Widget build(BuildContext context) {
     return AdaptiveScaffold(
-      titleBar: TitleBar(
-        title: Text(
-          "A propos",
-          style: Theme.of(context).textTheme.headline6,
-        ),
-      ),
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.transparent,

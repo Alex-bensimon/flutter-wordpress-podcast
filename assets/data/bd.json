@@ -1,0 +1,10 @@
+[
+    {
+      "title": "Comic 1",
+      "pdf_path": "assets/bd/test_pdf.pdf"
+    },
+    {
+      "title": "Comic 2",
+      "pdf_path": "assets/bd/test_pdf_2.pdf"
+    }
+  ]

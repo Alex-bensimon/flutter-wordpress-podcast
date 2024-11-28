@@ -3,7 +3,6 @@ import 'package:fwp/models/models.dart';
 import 'package:fwp/repositories/repositories.dart';
 import 'package:fwp/styles/styles.dart';
 import 'package:fwp/widgets/widgets.dart';
-import 'package:macos_ui/macos_ui.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
@@ -100,7 +99,6 @@ class _SearchScreenState extends State<SearchScreen> {
     final isDarkMode = isAppInDarkMode(context);
 
     return AdaptiveScaffold(
-      titleBar: TitleBar(title: renderTitle(isDarkMode: isDarkMode)),
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.transparent,

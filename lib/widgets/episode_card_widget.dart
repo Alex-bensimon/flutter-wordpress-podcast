@@ -42,9 +42,6 @@ class EpisodeCard extends StatelessWidget {
   }
 
   Color getBackgroundColor({bool isDarkMode = false}) {
-    if (Platform.isMacOS) {
-      return isDarkMode ? Colors.black : Colors.white;
-    }
     return isDarkMode ? const Color(0xFF1C1C1E) : Colors.white;
   }
 

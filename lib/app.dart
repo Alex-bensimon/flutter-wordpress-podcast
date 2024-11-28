@@ -10,7 +10,6 @@ import 'package:fwp/models/models.dart';
 import 'package:fwp/repositories/repositories.dart';
 import 'package:fwp/screens/screens.dart';
 import 'package:fwp/styles/styles.dart';
-import 'package:macos_ui/macos_ui.dart';
 import 'package:provider/provider.dart';
 import 'package:fwp/service_locator.dart';
 
@@ -24,14 +23,16 @@ class FwpApp extends StatefulWidget {
 }
 
 class _FwpAppState extends State<FwpApp> with WidgetsBindingObserver {
-  List<String> screensTitle = ["Accueil", "Recherche", "A propos"];
+  List<String> screensTitle = [
+    "Accueil",
+    "Recherche",
+    "Catégories",
+    "A propos"
+  ];
   List<Widget> screens = [];
   List<BottomNavigationBarItem> bottomNavigationBarItems = [];
-  List<SidebarItem> sidebarItems = [];
   ThemeData lightThemeData = ThemeData();
   ThemeData darkThemeData = ThemeData();
-  MacosThemeData darkThemeDataMacOS = MacosThemeData();
-  MacosThemeData lightThemeDataMacOS = MacosThemeData();
 
   final app = dotenv.env['APP'];
 
@@ -43,37 +44,14 @@ class _FwpAppState extends State<FwpApp> with WidgetsBindingObserver {
     if (app == APP.thinkerview.name) {
       lightThemeData = ligthThemeDataThinkerview;
       darkThemeData = darkThemeDataThinkerview;
-      lightThemeDataMacOS = lightThemeDataMacOSThinkerview;
-      darkThemeDataMacOS = darkThemeDataMacOSThinkerview;
-      screensTitle = ["Accueil", "Recherche", "A propos"];
-
-      screens = const [HomeScreen(), SearchScreen(), AboutScreen()];
-
-      bottomNavigationBarItems = [
-        BottomNavigationBarItem(
-          icon: const Icon(Icons.house),
-          label: screensTitle[0],
-        ),
-        BottomNavigationBarItem(
-          icon: const Icon(Icons.search),
-          label: screensTitle[1],
-        ),
-        BottomNavigationBarItem(
-          icon: const Icon(Icons.info),
-          label: screensTitle[2],
-        ),
-      ];
-    } else if (app == APP.causecommune.name) {
-      lightThemeData = ligthThemeDataCauseCommune;
-      darkThemeData = darkThemeDataCauseCommune;
-      lightThemeDataMacOS = lightThemeDataMacOSCauseCommune;
-      darkThemeDataMacOS = darkThemeDataMacOSCauseCommune;
-      screensTitle = ["Accueil", "Lecteur", "Recherche", "A propos"];
+      screensTitle = ["Accueil", "Recherche", "Catégories", "BD", "A propos"];
 
       screens = const [
         HomeScreen(),
         SearchScreen(),
-        AboutScreen(),
+        CategoriesScreen(),
+        ComicsScreen(),
+        AboutScreen()
       ];
 
       bottomNavigationBarItems = [
@@ -82,102 +60,23 @@ class _FwpAppState extends State<FwpApp> with WidgetsBindingObserver {
           label: screensTitle[0],
         ),
         BottomNavigationBarItem(
-          icon: const Icon(Icons.music_note),
+          icon: const Icon(Icons.search),
           label: screensTitle[1],
         ),
         BottomNavigationBarItem(
-          icon: const Icon(Icons.search),
+          icon: const Icon(Icons.category),
           label: screensTitle[2],
-        )
-      ];
-    }
-  }
-
-  List<SidebarItem> getSidebar({required bool isDarkMode}) {
-    if (app == APP.thinkerview.name) {
-      return [
-        SidebarItem(
-          leading: MacosIcon(
-            CupertinoIcons.home,
-            color: isDarkMode ? Colors.white : Colors.black,
-          ),
-          label: Text(
-            screensTitle[0],
-            style: Theme.of(context)
-                .textTheme
-                .bodyText1!
-                .copyWith(color: isDarkMode ? Colors.white : Colors.black),
-          ),
         ),
-        SidebarItem(
-          leading: MacosIcon(
-            CupertinoIcons.search,
-            color: isDarkMode ? Colors.white : Colors.black,
-          ),
-          label: Text(
-            screensTitle[1],
-            style: Theme.of(context)
-                .textTheme
-                .bodyText1!
-                .copyWith(color: isDarkMode ? Colors.white : Colors.black),
-          ),
+        BottomNavigationBarItem(
+          icon: const Icon(Icons.book),
+          label: screensTitle[3],
         ),
-        SidebarItem(
-          leading: MacosIcon(
-            CupertinoIcons.info,
-            color: isDarkMode ? Colors.white : Colors.black,
-          ),
-          label: Text(
-            screensTitle[2],
-            style: Theme.of(context)
-                .textTheme
-                .bodyText1!
-                .copyWith(color: isDarkMode ? Colors.white : Colors.black),
-          ),
+        BottomNavigationBarItem(
+          icon: const Icon(Icons.info),
+          label: screensTitle[4],
         ),
       ];
     }
-    return [
-      SidebarItem(
-        leading: MacosIcon(
-          CupertinoIcons.home,
-          color: isDarkMode ? Colors.white : Colors.black,
-        ),
-        label: Text(
-          screensTitle[0],
-          style: Theme.of(context)
-              .textTheme
-              .bodyText1!
-              .copyWith(color: isDarkMode ? Colors.white : Colors.black),
-        ),
-      ),
-      SidebarItem(
-        leading: MacosIcon(
-          CupertinoIcons.search,
-          color: isDarkMode ? Colors.white : Colors.black,
-        ),
-        label: Text(
-          screensTitle[1],
-          style: Theme.of(context)
-              .textTheme
-              .bodyText1!
-              .copyWith(color: isDarkMode ? Colors.white : Colors.black),
-        ),
-      ),
-      SidebarItem(
-        leading: MacosIcon(
-          CupertinoIcons.info,
-          color: isDarkMode ? Colors.white : Colors.black,
-        ),
-        label: Text(
-          screensTitle[2],
-          style: Theme.of(context)
-              .textTheme
-              .bodyText1!
-              .copyWith(color: isDarkMode ? Colors.white : Colors.black),
-        ),
-      ),
-    ];
   }
 
   @override
@@ -191,8 +90,6 @@ class _FwpAppState extends State<FwpApp> with WidgetsBindingObserver {
   String getTitle() {
     if (app == APP.thinkerview.name) {
       return "Thinkerview";
-    } else if (app == APP.causecommune.name) {
-      return "Cause Commune";
     }
     return "";
   }
